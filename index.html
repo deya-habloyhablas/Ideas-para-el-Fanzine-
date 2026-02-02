@@ -5,6 +5,8 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Neon Fanzine Trivia</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -37,6 +39,8 @@
         }
       }
     </script>
+    
+    <!-- Fonts -->
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Righteous&family=Roboto+Slab:wght@400;700&display=swap');
       body {
@@ -48,7 +52,21 @@
       .font-neon {
         font-family: 'Righteous', cursive;
       }
+      /* Scrollbar styling */
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 8px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: rgba(0,0,0,0.3);
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #ffd700;
+        border-radius: 4px;
+      }
     </style>
+
+    <!-- React & Babel Standalone for browser compilation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script type="importmap">
 {
   "imports": {
@@ -63,6 +81,598 @@
 </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
+
+    <script type="text/babel" data-type="module">
+      import React, { useState, useEffect } from 'https://esm.sh/react@18.2.0';
+      import ReactDOM from 'https://esm.sh/react-dom@18.2.0/client';
+      import { ArrowRight, Plus, Minus, Users, Check, Eye, Trophy, Star } from 'https://esm.sh/lucide-react@0.263.1';
+      import confetti from 'https://esm.sh/canvas-confetti@1.6.0';
+
+      // --- CONSTANTS & DATA ---
+      const IMG_BOTIN = "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80";
+      const IMG_NURIA = "https://images.unsplash.com/photo-1547891654-e66ed7ebb968?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80";
+      
+      const QUESTIONS = [
+        {
+          id: 1,
+          questionEs: "¿Cómo empieza la letra oficial del himno de España?",
+          questionEn: "How do the official lyrics of the Spanish anthem begin?",
+          options: [
+            { id: 'A', textEs: "En el país del sol…", textEn: "In the land of the sun..." },
+            { id: 'B', textEs: "En la patria…", textEn: "In the motherland..." },
+            { id: 'C', textEs: "No tiene", textEn: "It has no lyrics" },
+          ],
+          correctOptionId: 'C',
+        },
+        {
+          id: 2,
+          questionEs: "¿Dónde está el restaurante más antiguo del mundo?",
+          questionEn: "Where is the oldest restaurant in the world?",
+          options: [
+            { id: 'A', textEs: "España", textEn: "Spain" },
+            { id: 'B', textEs: "México", textEn: "Mexico" },
+            { id: 'C', textEs: "Argentina", textEn: "Argentina" },
+          ],
+          correctOptionId: 'A',
+          imageAnswer: IMG_BOTIN, 
+        },
+        {
+          id: 3,
+          questionEs: "¿Qué famoso pintor trabajó allí?",
+          questionEn: "Which famous painter worked there?",
+          options: [
+            { id: 'A', textEs: "Goya", textEn: "Goya" },
+            { id: 'B', textEs: "Picasso", textEn: "Picasso" },
+            { id: 'C', textEs: "Dalí", textEn: "Dalí" },
+          ],
+          correctOptionId: 'A',
+        },
+        {
+          id: 4,
+          questionEs: "Oficialmente, si no quiero decir ni alumnos, ni alumnas, digo…",
+          questionEn: "Officially, if I don't want to say 'alumnos' or 'alumnas', I say...",
+          options: [
+            { id: 'A', textEs: "alumnxs", textEn: "alumnxs" },
+            { id: 'B', textEs: "alumnes", textEn: "alumnes" },
+            { id: 'C', textEs: "alumnado", textEn: "alumnado" },
+          ],
+          correctOptionId: 'C',
+        },
+        {
+          id: 5,
+          questionEs: "¿De qué artista hay una exposición en HK?",
+          questionEn: "Which artist has an exhibition in HK?",
+          options: [
+            { id: 'A', textEs: "Picasso", textEn: "Picasso" },
+            { id: 'B', textEs: "Nuria Mora", textEn: "Nuria Mora" },
+            { id: 'C', textEs: "Rosa Montero", textEn: "Rosa Montero" },
+          ],
+          correctOptionId: 'B',
+          imageQuestion: IMG_NURIA,
+        },
+        {
+          id: 6,
+          questionEs: "¿Qué es un tinto en Colombia?",
+          questionEn: "What is a 'tinto' in Colombia?",
+          options: [
+            { id: 'A', textEs: "Vino", textEn: "Wine" },
+            { id: 'B', textEs: "Tapa", textEn: "Snack/Tapa" },
+            { id: 'C', textEs: "Café", textEn: "Coffee" },
+          ],
+          correctOptionId: 'C',
+        },
+        {
+          id: 7,
+          questionEs: "¿Qué director hispanoparlante tiene 3 Oscar, ha ganado el Goya, y 2 globos de oro?",
+          questionEn: "Which Spanish-speaking director has 3 Oscars, a Goya, and 2 Golden Globes?",
+          options: [
+            { id: 'A', textEs: "Pedro Almodóvar", textEn: "Pedro Almodóvar" },
+            { id: 'B', textEs: "Guillermo del Toro", textEn: "Guillermo del Toro" },
+            { id: 'C', textEs: "Pedro Amenábar", textEn: "Pedro Amenábar" },
+          ],
+          correctOptionId: 'B',
+        },
+        {
+          id: 8,
+          questionEs: "¿Cuál es el tercer país del mundo con más museos?",
+          questionEn: "Which is the third country in the world with the most museums?",
+          options: [
+            { id: 'A', textEs: "Colombia", textEn: "Colombia" },
+            { id: 'B', textEs: "México", textEn: "Mexico" },
+            { id: 'C', textEs: "España", textEn: "Spain" },
+          ],
+          correctOptionId: 'C',
+        },
+        {
+          id: 9,
+          questionEs: "A buenas horas…",
+          questionEn: "At good hours... (Better late than never sarcasm)",
+          options: [
+            { id: 'A', textEs: "mangas verdes", textEn: "green sleeves" },
+            { id: 'B', textEs: "llegas tarde", textEn: "you arrive late" },
+            { id: 'C', textEs: "dios nos ayuda", textEn: "god helps us" },
+          ],
+          correctOptionId: 'A',
+        },
+        {
+          id: 10,
+          questionEs: "¿Por qué se llama Berghain la canción de Rosalía?",
+          questionEn: "Why is Rosalía's song called Berghain?",
+          options: [
+            { id: 'A', textEs: "Porque allí conoció a su ex novio", textEn: "She met her ex there" },
+            { id: 'B', textEs: "Porque su novio le robó una canción", textEn: "Her boyfriend stole a song" },
+            { id: 'C', textEs: "Porque allí dio su primer concierto", textEn: "She gave her first concert there" },
+          ],
+          correctOptionId: 'B',
+        },
+        {
+          id: 11,
+          questionEs: "¿Qué país tiene la bandera más antigua de América que sigue en uso (adoptada en 1816)?",
+          questionEn: "Which country has the oldest flag in the Americas still in use (adopted 1816)?",
+          options: [
+            { id: 'A', textEs: "México", textEn: "Mexico" },
+            { id: 'B', textEs: "Bolivia", textEn: "Bolivia" },
+            { id: 'C', textEs: "Argentina", textEn: "Argentina" },
+          ],
+          correctOptionId: 'C',
+        },
+        {
+          id: 12,
+          questionEs: "¿En qué países está el glaciar Perito Moreno?",
+          questionEn: "In which countries is the Perito Moreno glacier located?",
+          options: [
+            { id: 'A', textEs: "España - Andorra", textEn: "Spain - Andorra" },
+            { id: 'B', textEs: "Chile - Argentina", textEn: "Chile - Argentina" },
+            { id: 'C', textEs: "Argentina - Uruguay", textEn: "Argentina - Uruguay" },
+          ],
+          correctOptionId: 'B',
+        },
+      ];
+
+      // --- COMPONENTS ---
+
+      const Stickers = () => {
+        return (
+          <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+            {/* Top Left */}
+            <div className="absolute top-4 left-4 text-6xl opacity-80 animate-pulse transform -rotate-12 drop-shadow-[0_0_10px_rgba(255,0,0,0.5)]">
+              🥘
+            </div>
+            {/* Top Right */}
+            <div className="absolute top-10 right-10 text-6xl opacity-80 animate-bounce-slow transform rotate-12 drop-shadow-[0_0_10px_rgba(255,215,0,0.5)]">
+              💃
+            </div>
+            {/* Bottom Left */}
+            <div className="absolute bottom-10 left-10 text-6xl opacity-80 animate-pulse delay-100 transform rotate-45 drop-shadow-[0_0_10px_rgba(255,0,255,0.5)]">
+              💀
+            </div>
+            {/* Bottom Right */}
+            <div className="absolute bottom-20 right-5 text-6xl opacity-80 animate-bounce delay-700 transform -rotate-12 drop-shadow-[0_0_10px_rgba(0,255,255,0.5)]">
+              🪭
+            </div>
+            {/* Randoms */}
+            <div className="absolute top-1/2 left-5 text-4xl opacity-60 transform -rotate-90">
+              🌵
+            </div>
+            <div className="absolute top-1/3 right-8 text-4xl opacity-60 transform rotate-12">
+              🎸
+            </div>
+          </div>
+        );
+      };
+
+      const StartScreen = ({ setGameState }) => {
+        return (
+          <div className="relative w-full h-screen flex flex-col items-center justify-center bg-black overflow-hidden">
+            <div 
+              className="absolute inset-0 bg-cover bg-center opacity-60"
+              style={{ 
+                backgroundImage: `url('https://images.unsplash.com/photo-1514306191717-45224512c2d0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80')` 
+              }}
+            />
+            
+            <div className="z-10 flex flex-col items-center p-8 bg-black/60 border-4 border-neon-gold rounded-xl shadow-[0_0_30px_rgba(255,215,0,0.6)] backdrop-blur-sm max-w-4xl w-full">
+              <div className="border-8 border-dotted border-neon-gold p-8 rounded-lg mb-12 shadow-[0_0_20px_rgba(255,0,0,0.8)] bg-curtain-red/90 relative">
+                  <h1 className="text-6xl md:text-8xl font-neon text-white text-center drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] animate-flicker">
+                    FANZINE
+                  </h1>
+                  <p className="font-serif text-neon-gold text-2xl md:text-4xl text-center mt-4 tracking-wider italic drop-shadow-[0_0_5px_rgba(255,215,0,0.8)]">
+                    Bienvenidas a nuestro
+                  </p>
+              </div>
+
+              <button
+                onClick={() => setGameState('SETUP')}
+                className="group relative px-12 py-4 bg-transparent border-4 border-neon-gold text-neon-gold text-2xl font-bold uppercase tracking-widest hover:bg-neon-gold hover:text-deep-red transition-all duration-300 shadow-[0_0_15px_rgba(255,215,0,0.5)] hover:shadow-[0_0_30px_rgba(255,215,0,0.8)] rounded-full"
+              >
+                <span className="relative z-10">Comenzar</span>
+              </button>
+            </div>
+            
+            <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-black to-transparent z-0 opacity-80" />
+            <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-black to-transparent z-0 opacity-80" />
+          </div>
+        );
+      };
+
+      const TeamSetup = ({ setGameState, setTeams }) => {
+        const [count, setCount] = useState(2);
+        const [names, setNames] = useState(['', '']);
+
+        const handleCountChange = (delta) => {
+          const newCount = Math.max(1, Math.min(8, count + delta));
+          setCount(newCount);
+          if (newCount > names.length) {
+            setNames([...names, '']);
+          } else if (newCount < names.length) {
+            setNames(names.slice(0, newCount));
+          }
+        };
+
+        const handleNameChange = (index, value) => {
+          const newNames = [...names];
+          newNames[index] = value;
+          setNames(newNames);
+        };
+
+        const handleNext = () => {
+          const finalTeams = names.map((name, i) => ({
+            id: `team-${i}`,
+            name: name.trim() || `Equipo ${i + 1}`,
+            score: 0,
+          }));
+          setTeams(finalTeams);
+          setGameState('PREP');
+        };
+
+        return (
+          <div className="min-h-screen bg-deep-red flex flex-col items-center justify-center p-4 relative overflow-hidden">
+            <Stickers />
+            
+            <div className="z-10 w-full max-w-2xl bg-black/80 border-2 border-neon-red p-8 rounded-xl shadow-[0_0_20px_rgba(255,0,60,0.4)] backdrop-blur-md">
+              <h2 className="text-4xl font-neon text-neon-gold mb-8 text-center drop-shadow-[0_0_8px_rgba(255,215,0,0.8)]">
+                Equipos
+              </h2>
+
+              <div className="flex items-center justify-center mb-8 gap-6">
+                  <button 
+                      onClick={() => handleCountChange(-1)}
+                      className="p-3 rounded-full border-2 border-white/50 hover:border-neon-gold hover:bg-neon-gold/20 transition text-white"
+                  >
+                      <Minus size={24} />
+                  </button>
+                  <div className="flex flex-col items-center">
+                      <span className="text-5xl font-bold text-white font-neon">{count}</span>
+                      <span className="text-sm uppercase tracking-widest text-white/60">Grupos</span>
+                  </div>
+                  <button 
+                      onClick={() => handleCountChange(1)}
+                      className="p-3 rounded-full border-2 border-white/50 hover:border-neon-gold hover:bg-neon-gold/20 transition text-white"
+                  >
+                      <Plus size={24} />
+                  </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 max-h-[40vh] overflow-y-auto custom-scrollbar p-2">
+                  {Array.from({ length: count }).map((_, i) => (
+                      <div key={i} className="relative group">
+                          <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/40 group-focus-within:text-neon-red transition" size={20} />
+                          <input 
+                              type="text"
+                              placeholder={`Nombre Equipo ${i + 1}`}
+                              value={names[i] || ''}
+                              onChange={(e) => handleNameChange(i, e.target.value)}
+                              className="w-full bg-white/10 border border-white/20 rounded-lg py-3 pl-10 pr-4 text-white placeholder-white/30 focus:outline-none focus:border-neon-red focus:ring-1 focus:ring-neon-red transition font-bold"
+                          />
+                      </div>
+                  ))}
+              </div>
+
+              <div className="flex justify-end">
+                  <button 
+                      onClick={handleNext}
+                      className="flex items-center gap-2 bg-neon-red text-white px-8 py-3 rounded-lg font-bold hover:bg-red-600 transition shadow-[0_0_15px_rgba(255,0,60,0.6)] animate-pulse hover:animate-none"
+                  >
+                      SIGUIENTE <ArrowRight size={24} />
+                  </button>
+              </div>
+            </div>
+          </div>
+        );
+      };
+
+      const PrepScreen = ({ setGameState }) => {
+        return (
+          <div 
+              onClick={() => setGameState('QUIZ')}
+              className="min-h-screen bg-black flex items-center justify-center cursor-pointer relative"
+          >
+              <div className="absolute inset-0 bg-gradient-to-br from-curtain-red to-black opacity-50" />
+              
+              <h1 className="relative z-10 text-6xl md:text-9xl font-neon text-neon-gold text-center animate-bounce-slow drop-shadow-[0_0_30px_rgba(255,215,0,0.8)] select-none">
+                  ¿PREPARADAS?
+              </h1>
+
+              <div className="absolute bottom-10 text-white/50 text-sm animate-pulse">
+                  (Clic para comenzar)
+              </div>
+          </div>
+        );
+      };
+
+      const QuestionScreen = ({ setGameState, teams, setTeams }) => {
+        const [currentIndex, setCurrentIndex] = useState(0);
+        const [isRevealed, setIsRevealed] = useState(false);
+        const [winners, setWinners] = useState([]);
+
+        const currentQ = QUESTIONS[currentIndex];
+
+        const handleReveal = () => {
+          setIsRevealed(true);
+        };
+
+        const toggleWinner = (teamId) => {
+          if (winners.includes(teamId)) {
+            setWinners(winners.filter(id => id !== teamId));
+          } else {
+            setWinners([...winners, teamId]);
+          }
+        };
+
+        const handleNextQuestion = () => {
+          const updatedTeams = teams.map(team => ({
+            ...team,
+            score: winners.includes(team.id) ? team.score + 1 : team.score
+          }));
+          setTeams(updatedTeams);
+
+          setWinners([]);
+          setIsRevealed(false);
+
+          if (currentIndex < QUESTIONS.length - 1) {
+            setCurrentIndex(currentIndex + 1);
+          } else {
+            setGameState('RANKING');
+          }
+        };
+
+        return (
+          <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center p-4 md:p-8 relative overflow-hidden">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-deep-red via-black to-black z-0" />
+            <Stickers />
+
+            <div className="z-10 w-full max-w-5xl flex flex-col flex-grow">
+              
+              <div className="w-full h-2 bg-gray-800 rounded-full mb-6">
+                  <div 
+                      className="h-full bg-neon-red shadow-[0_0_10px_rgba(255,0,60,0.8)] transition-all duration-500"
+                      style={{ width: `${((currentIndex + 1) / QUESTIONS.length) * 100}%` }}
+                  />
+              </div>
+
+              <div className="relative bg-black/60 border-4 border-neon-gold rounded-2xl p-6 md:p-10 mb-6 shadow-[0_0_30px_rgba(255,215,0,0.3)] backdrop-blur-sm flex flex-col md:flex-row gap-6 items-center">
+                  
+                  <div className="flex-1">
+                      <h2 className="text-3xl md:text-5xl font-bold mb-4 text-neon-gold drop-shadow-[0_0_5px_rgba(255,215,0,0.5)] leading-tight">
+                          {currentQ.questionEs}
+                      </h2>
+                      <p className="text-xl md:text-2xl text-gray-400 font-light italic border-l-4 border-neon-red pl-4">
+                          {currentQ.questionEn}
+                      </p>
+                  </div>
+
+                  {currentQ.imageQuestion && (
+                      <div className="w-full md:w-1/3 shrink-0">
+                           <img 
+                              src={currentQ.imageQuestion} 
+                              alt="Question Hint" 
+                              className="w-full h-auto rounded-lg border-2 border-white/20 shadow-lg object-cover max-h-60"
+                           />
+                      </div>
+                  )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                  {currentQ.options.map((opt) => {
+                      const isCorrect = opt.id === currentQ.correctOptionId;
+                      const isHighlighted = isRevealed && isCorrect;
+                      
+                      return (
+                          <div 
+                              key={opt.id}
+                              className={`
+                                  relative p-6 rounded-xl border-2 transition-all duration-500 flex flex-col items-center justify-center text-center
+                                  ${isHighlighted 
+                                      ? 'bg-green-900/80 border-green-400 scale-105 shadow-[0_0_20px_rgba(74,222,128,0.6)] z-20' 
+                                      : 'bg-white/5 border-white/10 hover:border-white/30'
+                                  }
+                                  ${isRevealed && !isCorrect ? 'opacity-50 blur-[1px]' : 'opacity-100'}
+                              `}
+                          >
+                              <span className={`text-4xl font-bold mb-2 ${isHighlighted ? 'text-green-300' : 'text-neon-red'}`}>
+                                  {opt.id}
+                              </span>
+                              <div className="text-xl font-bold">{opt.textEs}</div>
+                              <div className="text-sm text-gray-400">{opt.textEn}</div>
+                          </div>
+                      );
+                  })}
+              </div>
+
+              {isRevealed && currentQ.imageAnswer && (
+                  <div className="mb-8 w-full flex justify-center animate-fade-in-up">
+                       <div className="relative p-2 bg-white/10 rounded-xl transform rotate-1">
+                           <div className="absolute -top-3 -right-3 bg-neon-red text-white px-3 py-1 rounded-full font-bold shadow-lg">Respuesta</div>
+                           <img 
+                              src={currentQ.imageAnswer} 
+                              alt="Answer" 
+                              className="max-h-64 rounded-lg shadow-[0_0_20px_rgba(0,0,0,0.5)]"
+                           />
+                       </div>
+                  </div>
+              )}
+
+              <div className="mt-auto">
+                  {!isRevealed ? (
+                      <div className="flex justify-end">
+                          <button 
+                              onClick={handleReveal}
+                              className="group flex items-center gap-2 px-8 py-3 bg-neon-gold text-black font-bold rounded-full hover:bg-white transition shadow-[0_0_15px_rgba(255,215,0,0.6)]"
+                          >
+                              <Eye className="group-hover:scale-110 transition" />
+                              VER RESPUESTA
+                          </button>
+                      </div>
+                  ) : (
+                      <div className="bg-black/80 border border-white/20 p-6 rounded-xl animate-fade-in">
+                          <h3 className="text-center text-neon-gold uppercase tracking-widest mb-4 font-bold">
+                              ¿Quién ha acertado? (+1 Punto)
+                          </h3>
+                          
+                          <div className="flex flex-wrap justify-center gap-3 mb-6">
+                              {teams.map(team => (
+                                  <button
+                                      key={team.id}
+                                      onClick={() => toggleWinner(team.id)}
+                                      className={`
+                                          px-4 py-2 rounded-full border-2 transition font-bold flex items-center gap-2
+                                          ${winners.includes(team.id) 
+                                              ? 'bg-green-600 border-green-400 text-white shadow-[0_0_10px_rgba(34,197,94,0.5)]' 
+                                              : 'bg-transparent border-gray-600 text-gray-400 hover:border-white hover:text-white'
+                                          }
+                                      `}
+                                  >
+                                      {winners.includes(team.id) && <Check size={16} />}
+                                      {team.name}
+                                  </button>
+                              ))}
+                          </div>
+
+                          <div className="flex justify-center w-full">
+                               <button 
+                                  onClick={handleNextQuestion}
+                                  className="w-full md:w-auto flex items-center justify-center gap-2 px-10 py-4 bg-neon-red text-white font-bold rounded-lg hover:bg-red-600 transition shadow-[0_0_20px_rgba(255,0,60,0.4)] text-xl"
+                              >
+                                  SIGUIENTE PREGUNTA <ArrowRight />
+                              </button>
+                          </div>
+                      </div>
+                  )}
+              </div>
+            </div>
+          </div>
+        );
+      };
+
+      const RankingScreen = ({ teams, setGameState }) => {
+        const sortedTeams = [...teams].sort((a, b) => b.score - a.score);
+        const winner = sortedTeams[0];
+        const runnersUp = sortedTeams.slice(1);
+
+        useEffect(() => {
+          const duration = 5 * 1000;
+          const animationEnd = Date.now() + duration;
+          const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+          const randomInRange = (min, max) => Math.random() * (max - min) + min;
+
+          const interval = window.setInterval(function() {
+            const timeLeft = animationEnd - Date.now();
+
+            if (timeLeft <= 0) {
+              return clearInterval(interval);
+            }
+
+            const particleCount = 50 * (timeLeft / duration);
+            confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+            confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+          }, 250);
+
+          return () => clearInterval(interval);
+        }, []);
+
+        return (
+          <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-t from-deep-red via-transparent to-transparent opacity-60" />
+            <Stickers />
+
+            <div className="z-10 flex flex-col items-center w-full max-w-4xl">
+              <h1 className="text-5xl md:text-7xl font-neon text-neon-gold mb-12 drop-shadow-[0_0_20px_rgba(255,215,0,0.8)] text-center animate-pulse">
+                  RANKING FINAL
+              </h1>
+
+              <div className="relative mb-16 flex flex-col items-center">
+                  <div className="animate-bounce-slow">
+                      <Trophy size={120} className="text-neon-gold drop-shadow-[0_0_30px_rgba(255,215,0,1)]" />
+                  </div>
+                  <div className="mt-4 text-center">
+                      <h2 className="text-4xl md:text-6xl font-bold text-white mb-2 uppercase tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-yellow-400 to-yellow-200">
+                          {winner?.name || 'Nadie'}
+                      </h2>
+                      <div className="inline-block px-6 py-2 bg-neon-gold text-black font-black text-2xl rounded-full shadow-lg">
+                          {winner?.score || 0} PUNTOS
+                      </div>
+                  </div>
+                  <div className="absolute -top-10 -right-10 text-6xl animate-pulse delay-75">🎉</div>
+                  <div className="absolute -top-10 -left-10 text-6xl animate-pulse delay-150">✨</div>
+              </div>
+
+              <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm max-h-[40vh] overflow-y-auto custom-scrollbar">
+                  {runnersUp.map((team, index) => (
+                      <div key={team.id} className="flex items-center justify-between p-4 bg-black/40 rounded-lg border border-white/5 hover:border-neon-red/50 transition">
+                          <div className="flex items-center gap-4">
+                              <span className="text-gray-500 font-mono text-xl">#{index + 2}</span>
+                              <span className="text-xl font-bold text-gray-200">{team.name}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                              <span className="text-neon-red font-bold text-xl">{team.score}</span>
+                              <Star size={16} className="text-neon-red fill-current" />
+                          </div>
+                      </div>
+                  ))}
+              </div>
+
+              <button 
+                  onClick={() => window.location.reload()}
+                  className="mt-12 text-gray-500 hover:text-white underline underline-offset-4 transition"
+              >
+                  Volver a empezar
+              </button>
+            </div>
+          </div>
+        );
+      };
+
+      const App = () => {
+        const [gameState, setGameState] = useState('START');
+        const [teams, setTeams] = useState([]);
+
+        const renderScreen = () => {
+          switch (gameState) {
+            case 'START':
+              return <StartScreen setGameState={setGameState} />;
+            case 'SETUP':
+              return <TeamSetup setGameState={setGameState} setTeams={setTeams} />;
+            case 'PREP':
+              return <PrepScreen setGameState={setGameState} />;
+            case 'QUIZ':
+              return <QuestionScreen setGameState={setGameState} teams={teams} setTeams={setTeams} />;
+            case 'RANKING':
+              return <RankingScreen teams={teams} setGameState={setGameState} />;
+            default:
+              return <StartScreen setGameState={setGameState} />;
+          }
+        };
+
+        return (
+          <main className="w-full h-full">
+            {renderScreen()}
+          </main>
+        );
+      };
+
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(<App />);
+    </script>
   </body>
 </html>
